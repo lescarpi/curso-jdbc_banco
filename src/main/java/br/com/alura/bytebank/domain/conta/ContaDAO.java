@@ -94,7 +94,7 @@ public class ContaDAO {
                 Cliente titular = new Cliente(new DadosCadastroCliente(nome, cpf, email));
                 conta = new Conta(numero, titular);
             }
-            
+
             rs.close();
             ps.close();
             con.close();
