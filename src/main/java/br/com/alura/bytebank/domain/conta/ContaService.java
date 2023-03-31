@@ -37,25 +37,31 @@ public class ContaService {
     }
 
     public void realizarSaque(Integer numeroDaConta, BigDecimal valor) {
-        var conta = buscarContaPorNumero(numeroDaConta);
         if (valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RegraDeNegocioException("Valor do saque deve ser superior a zero!");
         }
-
+        Conta conta = buscarContaPorNumero(numeroDaConta);
         if (valor.compareTo(conta.getSaldo()) > 0) {
             throw new RegraDeNegocioException("Saldo insuficiente!");
         }
-
-        conta.sacar(valor);
+        BigDecimal saldoFinal = conta.getSaldo().subtract(valor);
+        Connection con = connection.recuperarConexao();
+        new ContaDAO(con).alterar(conta.getNumero(), saldoFinal);
     }
 
     public void realizarDeposito(Integer numeroDaConta, BigDecimal valor) {
-        var conta = buscarContaPorNumero(numeroDaConta);
         if (valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RegraDeNegocioException("Valor do deposito deve ser superior a zero!");
         }
+        Conta conta = buscarContaPorNumero(numeroDaConta);
+        BigDecimal saldoFinal = conta.getSaldo().add(valor);
+        Connection con = connection.recuperarConexao();
+        new ContaDAO(con).alterar(conta.getNumero(), saldoFinal);
+    }
 
-        conta.depositar(valor);
+    public void realizarTransferencia(Integer numeroDaContaOrigem, Integer numeroDaContaDestino, BigDecimal valor) {
+        this.realizarSaque(numeroDaContaOrigem, valor);
+        this.realizarDeposito(numeroDaContaDestino, valor);
     }
 
     public void encerrar(Integer numeroDaConta) {
