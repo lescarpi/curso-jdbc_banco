@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="bytebank" />
         <module name="bytebank-jdbc" />
+        <module name="curso_jdbc_banco" />
       </profile>
     </annotationProcessing>
   </component>
