@@ -37,7 +37,7 @@ public class BytebankApplication {
                         realizarDeposito();
                         break;
                     case 7:
-                        realizarTranseferencia();
+                        realizarTransferencia();
                         break;
                 }
             } catch (RegraDeNegocioException e) {
@@ -99,7 +99,7 @@ public class BytebankApplication {
         System.out.println("Digite o número da conta:");
         var numeroDaConta = teclado.nextInt();
 
-        service.encerrar(numeroDaConta);
+        service.desativar(numeroDaConta);
 
         System.out.println("Conta encerrada com sucesso!");
         System.out.println("Pressione qualquer tecla e de ENTER para voltar ao menu principal");
@@ -143,7 +143,7 @@ public class BytebankApplication {
         teclado.next();
     }
 
-    private static void realizarTranseferencia() {
+    private static void realizarTransferencia() {
         System.out.println("Digite o número da conta de origem:");
         Integer numeroDaContaOrigem = teclado.nextInt();
 

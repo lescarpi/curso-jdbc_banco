@@ -22,10 +22,10 @@ public class ContaDAO {
 
     public void salvar(DadosAberturaConta dadosAberturaConta) {
         Cliente cliente = new Cliente(dadosAberturaConta.dadosCliente());
-        Conta conta = new Conta(dadosAberturaConta.numero(), BigDecimal.ZERO, cliente);
+        Conta conta = new Conta(dadosAberturaConta.numero(), BigDecimal.ZERO, cliente, true);
 
-        String sql = "INSERT INTO conta (numero, saldo, cliente_nome, cliente_cpf, cliente_email) " +
-                "VALUES (?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO conta (numero, saldo, cliente_nome, cliente_cpf, cliente_email, esta_ativa) " +
+                "VALUES (?, ?, ?, ?, ?, ?);";
 
         try {
             PreparedStatement ps = con.prepareStatement(sql);
@@ -35,6 +35,7 @@ public class ContaDAO {
             ps.setString(3, conta.getTitular().getNome());
             ps.setString(4, conta.getTitular().getCpf());
             ps.setString(5, conta.getTitular().getEmail());
+            ps.setBoolean(6, true);
 
             ps.execute();
             ps.close();
@@ -48,7 +49,7 @@ public class ContaDAO {
         PreparedStatement ps;
         ResultSet rs;
         Set<Conta> contas = new HashSet<>();
-        String sql = "SELECT * FROM conta;";
+        String sql = "SELECT * FROM conta WHERE esta_ativa = true;";
 
         try {
             ps = con.prepareStatement(sql);
@@ -60,8 +61,9 @@ public class ContaDAO {
                 String nome = rs.getString(3);
                 String cpf = rs.getString(4);
                 String email = rs.getString(5);
+                boolean estaAtiva = rs.getBoolean(6);
                 Cliente titular = new Cliente(new DadosCadastroCliente(nome, cpf, email));
-                contas.add(new Conta(numero, saldo, titular));
+                contas.add(new Conta(numero, saldo, titular, estaAtiva));
             }
 
             rs.close();
@@ -91,8 +93,9 @@ public class ContaDAO {
                 String nome = rs.getString(3);
                 String cpf = rs.getString(4);
                 String email = rs.getString(5);
+                boolean estaAtiva = rs.getBoolean(6);
                 Cliente titular = new Cliente(new DadosCadastroCliente(nome, cpf, email));
-                conta = new Conta(numeroDaConta, saldo, titular);
+                conta = new Conta(numeroDaConta, saldo, titular, estaAtiva);
             }
 
             rs.close();
@@ -107,7 +110,7 @@ public class ContaDAO {
     public void alterar(Integer numeroDaConta, BigDecimal valor) {
         PreparedStatement ps;
 
-        String sql = "UPDATE conta SET saldo = ? WHERE numero = ?;";
+        String sql = "UPDATE conta SET saldo = ? WHERE numero = ? AND esta_ativa = true;";
 
         try {
             con.setAutoCommit(false);
@@ -128,5 +131,46 @@ public class ContaDAO {
                 throw new RuntimeException(ex);
             }
         }
+    }
+
+    public void desativar(Integer numeroDaConta) {
+        PreparedStatement ps;
+
+        String sql = "UPDATE conta SET esta_ativa = false WHERE numero = ?;";
+
+        try {
+            con.setAutoCommit(false);
+
+            ps = con.prepareStatement(sql);
+
+            ps.setInt(1, numeroDaConta);
+
+            ps.execute();
+            con.commit();
+            ps.close();
+            con.close();
+        } catch (SQLException e) {
+            try {
+                con.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    public void deletar(Integer numeroDaConta) {
+        String sql = "DELETE FROM conta WHERE numero = ?;";
+
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+
+            ps.setInt(1, numeroDaConta);
+            ps.execute();
+            ps.close();
+            con.close();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+
     }
 }
